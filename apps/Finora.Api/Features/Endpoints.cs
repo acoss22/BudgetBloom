@@ -31,6 +31,7 @@ public static class Endpoints
         api.MapPost("/recurring-transactions", (HttpContext c,RecurringRequest r,FinanceService s)=>s.CreateRecurring(FinanceService.UserId(c.User),r));
         api.MapGet("/mortgages", (HttpContext c,FinanceService s)=>s.Mortgages(FinanceService.UserId(c.User)));
         api.MapPost("/mortgages", (HttpContext c,MortgageRequest r,FinanceService s)=>s.CreateMortgage(FinanceService.UserId(c.User),r));
+        api.MapPut("/mortgages/{id:guid}", (HttpContext c,Guid id,MortgageRequest r,FinanceService s)=>s.UpdateMortgage(FinanceService.UserId(c.User),id,r));
         api.MapGet("/dashboard/summary", (HttpContext c,FinanceService s,int month,int year)=>s.Dashboard(FinanceService.UserId(c.User),month,year));
         api.MapDelete("/{resource}/{id:guid}", Delete);
     }
