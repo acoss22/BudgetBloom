@@ -1,0 +1,2 @@
+import { Component, inject } from '@angular/core'; import { TitleCasePipe } from '@angular/common'; import { ActivatedRoute } from '@angular/router'; import { MatCardModule } from '@angular/material/card';
+@Component({standalone:true,imports:[TitleCasePipe,MatCardModule],template:`<h1>{{title|titlecase}}</h1><mat-card><h2>{{title|titlecase}} workspace</h2><p>This feature is ready for your financial data.</p></mat-card>`,styles:[`mat-card{padding:1.5rem;min-height:180px}`]}) export class PlaceholderComponent{title=inject(ActivatedRoute).snapshot.data['title'] as string;}

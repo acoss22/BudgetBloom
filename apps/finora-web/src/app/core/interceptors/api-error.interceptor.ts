@@ -1,0 +1,2 @@
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http'; import { inject } from '@angular/core'; import { catchError, throwError } from 'rxjs'; import { NotificationService } from '../services/notification.service';
+export const apiErrorInterceptor:HttpInterceptorFn=(req,next)=>{const notes=inject(NotificationService);return next(req.clone({withCredentials:true})).pipe(catchError((e:HttpErrorResponse)=>{if(e.status!==401)notes.error(e.error?.title??'Something went wrong.');return throwError(()=>e);}));};

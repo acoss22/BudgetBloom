@@ -1,1 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+html { @include mat.theme((color: (primary: mat.$green-palette, tertiary: mat.$yellow-palette), typography: Roboto, density: 0)); }
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Roboto,"Helvetica Neue",sans-serif;color:#183329;background:#f5f7f5}h1,h2,p{margin-top:0}a{color:#276746}

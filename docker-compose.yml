@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment: { POSTGRES_DB: "${POSTGRES_DB}", POSTGRES_USER: "${POSTGRES_USER}", POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}" }
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"], interval: 5s, timeout: 5s, retries: 10 }
+  api:
+    build: ./apps/Finora.Api
+    environment: { ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}", ASPNETCORE_URLS: "http://+:8080", ConnectionStrings__DefaultConnection: "${ConnectionStrings__DefaultConnection}" }
+    ports: ["5080:8080"]
+    depends_on: { db: { condition: service_healthy } }
+    healthcheck: { test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"], interval: 10s, timeout: 5s, retries: 10 }
+  web:
+    build: ./apps/finora-web
+    ports: ["4200:4200"]
+    depends_on: { api: { condition: service_healthy } }
+volumes: { postgres_data: {} }
