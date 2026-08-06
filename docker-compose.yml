@@ -8,10 +8,11 @@ services:
     build: ./apps/Finora.Api
     environment: { ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}", ASPNETCORE_URLS: "http://+:8080", ConnectionStrings__DefaultConnection: "${ConnectionStrings__DefaultConnection}" }
     ports: ["5080:8080"]
+    volumes: ["data_protection_keys:/root/.aspnet/DataProtection-Keys"]
     depends_on: { db: { condition: service_healthy } }
-    healthcheck: { test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"], interval: 10s, timeout: 5s, retries: 10 }
+    healthcheck: { test: ["CMD-SHELL", "curl --fail --silent http://localhost:8080/health > /dev/null || exit 1"], interval: 10s, timeout: 5s, retries: 10 }
   web:
     build: ./apps/finora-web
     ports: ["4200:4200"]
     depends_on: { api: { condition: service_healthy } }
-volumes: { postgres_data: {} }
+volumes: { postgres_data: {}, data_protection_keys: {} }

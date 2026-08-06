@@ -34,13 +34,40 @@ Open http://localhost:4200. OpenAPI is available at `/openapi/v1.json` in Develo
 
 ## Docker development
 
+Copy the example environment file, replace its placeholder password, and build and start the complete stack:
+
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build
+```
+
+Open the application at http://localhost:4200. The API is available at http://localhost:5080, with its health endpoint at http://localhost:5080/health.
+
+Useful Docker commands:
+
+```powershell
+# Start or rebuild the stack in the background
+docker compose up -d --build
+
+# Show container state and health
+docker compose ps
+
+# Follow logs from every service
+docker compose logs -f
+
+# Follow logs from one service
+docker compose logs -f api
+docker compose logs -f web
+docker compose logs -f db
+
+# Rebuild only the API image without its build cache
+docker compose build --no-cache api
+
+# Stop and remove the containers and network
 docker compose down
 ```
 
-PostgreSQL data persists in the `postgres_data` named volume.
+PostgreSQL data and ASP.NET Core data-protection keys persist in named volumes. `docker compose down` preserves those volumes. To also delete all local Finora database data, run `docker compose down --volumes`; this is destructive and cannot be undone.
 
 ## Migrations
 
@@ -72,16 +99,3 @@ dotnet test Finora.slnx
 ## Security
 
 Identity's password hashing and secure HttpOnly cookies handle authentication. Production cookies require HTTPS. CORS is limited to the configured frontend origin. API DTOs avoid exposing Identity or EF internals, login errors do not reveal whether an email exists, and user-owned reads/writes validate ownership. Keep `.env` out of source control, rotate deployed secrets, terminate TLS at the edge, and use a managed secret store in production.
-
-To launch with Docker:
-Copy-Item .env.example .env
-# Replace placeholder passwords in .env
-docker compose up --build
-Then open http://localhost:4200.
-To launch directly:
-dotnet ef database update --project apps/Finora.Api
-dotnet run --project apps/Finora.Api --urls http://localhost:5080
-In another terminal:
-cd apps/finora-web
-npm ci
-npm start

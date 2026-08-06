@@ -39,6 +39,11 @@ builder.Services.AddCors(options => options.AddPolicy("web", policy => policy
 builder.Services.AddScoped<FinanceService>();
 
 var app = builder.Build();
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var database = scope.ServiceProvider.GetRequiredService<FinoraDbContext>();
+    await database.Database.MigrateAsync();
+}
 app.UseExceptionHandler();
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 app.UseHttpsRedirection();
