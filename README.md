@@ -72,3 +72,16 @@ dotnet test Finora.slnx
 ## Security
 
 Identity's password hashing and secure HttpOnly cookies handle authentication. Production cookies require HTTPS. CORS is limited to the configured frontend origin. API DTOs avoid exposing Identity or EF internals, login errors do not reveal whether an email exists, and user-owned reads/writes validate ownership. Keep `.env` out of source control, rotate deployed secrets, terminate TLS at the edge, and use a managed secret store in production.
+
+To launch with Docker:
+Copy-Item .env.example .env
+# Replace placeholder passwords in .env
+docker compose up --build
+Then open http://localhost:4200.
+To launch directly:
+dotnet ef database update --project apps/Finora.Api
+dotnet run --project apps/Finora.Api --urls http://localhost:5080
+In another terminal:
+cd apps/finora-web
+npm ci
+npm start
