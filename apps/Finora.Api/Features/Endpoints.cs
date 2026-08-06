@@ -29,6 +29,8 @@ public static class Endpoints
         api.MapPost("/budgets", (HttpContext c,BudgetRequest r,FinanceService s)=>s.CreateBudget(FinanceService.UserId(c.User),r));
         api.MapGet("/recurring-transactions", (HttpContext c,FinanceService s)=>s.Recurring(FinanceService.UserId(c.User)));
         api.MapPost("/recurring-transactions", (HttpContext c,RecurringRequest r,FinanceService s)=>s.CreateRecurring(FinanceService.UserId(c.User),r));
+        api.MapGet("/mortgages", (HttpContext c,FinanceService s)=>s.Mortgages(FinanceService.UserId(c.User)));
+        api.MapPost("/mortgages", (HttpContext c,MortgageRequest r,FinanceService s)=>s.CreateMortgage(FinanceService.UserId(c.User),r));
         api.MapGet("/dashboard/summary", (HttpContext c,FinanceService s,int month,int year)=>s.Dashboard(FinanceService.UserId(c.User),month,year));
         api.MapDelete("/{resource}/{id:guid}", Delete);
     }
@@ -46,5 +48,5 @@ public static class Endpoints
     }
     private static async Task<IResult> Login(LoginRequest request,UserManager<ApplicationUser> users,SignInManager<ApplicationUser> signIn) { var user=await users.FindByEmailAsync(request.Email); if(user is null||!(await signIn.PasswordSignInAsync(user,request.Password,true,true)).Succeeded)return Results.Problem(statusCode:401,title:"Invalid email or password."); return Results.Ok(UserDto(user)); }
     private static object UserDto(ApplicationUser u)=>new {u.Id,u.Email,u.DisplayName,u.CreatedAtUtc};
-    private static async Task<IResult> Delete(string resource,Guid id,HttpContext c,FinoraDbContext db) { var uid=FinanceService.UserId(c.User); object? entity=resource switch {"accounts"=>await db.Accounts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"categories"=>await db.Categories.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"transactions"=>await db.Transactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"budgets"=>await db.Budgets.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),_=>await db.RecurringTransactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid)}; if(entity is null)return Results.NotFound(); db.Remove(entity); await db.SaveChangesAsync(); return Results.NoContent(); }
+    private static async Task<IResult> Delete(string resource,Guid id,HttpContext c,FinoraDbContext db) { var uid=FinanceService.UserId(c.User); object? entity=resource switch {"accounts"=>await db.Accounts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"categories"=>await db.Categories.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"transactions"=>await db.Transactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"budgets"=>await db.Budgets.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"mortgages"=>await db.Mortgages.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"recurring-transactions"=>await db.RecurringTransactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),_=>null}; if(entity is null)return Results.NotFound(); db.Remove(entity); await db.SaveChangesAsync(); return Results.NoContent(); }
 }
