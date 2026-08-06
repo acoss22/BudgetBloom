@@ -16,7 +16,7 @@ public static class Endpoints
         auth.MapPost("/register", Register);
         auth.MapPost("/login", Login);
         auth.MapPost("/logout", async (SignInManager<ApplicationUser> signIn) => { await signIn.SignOutAsync(); return Results.NoContent(); }).RequireAuthorization();
-        auth.MapGet("/me", (ApplicationUser user) => Results.Ok(UserDto(user))).RequireAuthorization();
+        auth.MapGet("/me", async (HttpContext context, UserManager<ApplicationUser> users) => { var user=await users.GetUserAsync(context.User); return user is null?Results.Unauthorized():Results.Ok(UserDto(user)); }).RequireAuthorization();
 
         var api=app.MapGroup("/api").RequireAuthorization();
         api.MapGet("/accounts", (HttpContext c,FinanceService s)=>s.Accounts(FinanceService.UserId(c.User)));
@@ -30,7 +30,7 @@ public static class Endpoints
         api.MapGet("/recurring-transactions", (HttpContext c,FinanceService s)=>s.Recurring(FinanceService.UserId(c.User)));
         api.MapPost("/recurring-transactions", (HttpContext c,RecurringRequest r,FinanceService s)=>s.CreateRecurring(FinanceService.UserId(c.User),r));
         api.MapGet("/dashboard/summary", (HttpContext c,FinanceService s,int month,int year)=>s.Dashboard(FinanceService.UserId(c.User),month,year));
-        api.MapDelete("/{resource}/{id:guid}", Delete).Where(r=>new[]{"accounts","categories","transactions","budgets","recurring-transactions"}.Contains((string?)r.Values["resource"]));
+        api.MapDelete("/{resource}/{id:guid}", Delete);
     }
 
     private static async Task<IResult> Register(RegisterRequest request, UserManager<ApplicationUser> users, SignInManager<ApplicationUser> signIn, FinoraDbContext db)

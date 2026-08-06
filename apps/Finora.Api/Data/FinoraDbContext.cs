@@ -12,5 +12,15 @@ public sealed class FinoraDbContext(DbContextOptions<FinoraDbContext> options) :
         base.OnModelCreating(b);
         b.Entity<Account>().HasIndex(x => new { x.UserId, x.Name }); b.Entity<Category>().HasIndex(x => new { x.UserId, x.Name }); b.Entity<Transaction>().HasIndex(x => new { x.UserId, x.TransactionDate }); b.Entity<Budget>().HasIndex(x => new { x.UserId, x.CategoryId, x.Month, x.Year }).IsUnique(); b.Entity<RecurringTransaction>().HasIndex(x => new { x.UserId, x.NextOccurrenceDate });
         b.Entity<Account>().Property(x => x.InitialBalance).HasPrecision(18, 2); b.Entity<Transaction>().Property(x => x.Amount).HasPrecision(18, 2); b.Entity<Budget>().Property(x => x.Amount).HasPrecision(18, 2); b.Entity<RecurringTransaction>().Property(x => x.Amount).HasPrecision(18, 2);
+        b.Entity<Account>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Category>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Transaction>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Transaction>().HasOne<Account>().WithMany().HasForeignKey(x=>x.AccountId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Transaction>().HasOne<Category>().WithMany().HasForeignKey(x=>x.CategoryId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Budget>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<Budget>().HasOne<Category>().WithMany().HasForeignKey(x=>x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<RecurringTransaction>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<RecurringTransaction>().HasOne<Account>().WithMany().HasForeignKey(x=>x.AccountId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<RecurringTransaction>().HasOne<Category>().WithMany().HasForeignKey(x=>x.CategoryId).OnDelete(DeleteBehavior.SetNull);
     }
 }
