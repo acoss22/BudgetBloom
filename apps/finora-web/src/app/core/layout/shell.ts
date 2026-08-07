@@ -146,11 +146,16 @@ export class ShellComponent {
     ['budgets', 'savings', 'Budgets'],
     ['recurring-transactions', 'repeat', 'Recurring'],
     ['mortgages', 'cottage', 'Mortgages'],
+    ['loans', 'request_quote', 'Loans'],
+    ['credit-cards', 'credit_card', 'Credit cards'],
+    ['debit-cards', 'payment', 'Debit cards'],
+    ['investments', 'monitoring', 'Investments'],
     ['household-bills', 'home_work', 'Household bills'],
     ['medical-expenses', 'medical_services', 'Medical expenses'],
     ['supermarket-expenses', 'shopping_cart', 'Supermarket'],
     ['education-expenses', 'school', 'Education'],
     ['entertainment-expenses', 'sports_esports', 'Entertainment'],
+    ['pet-expenses', 'pets', 'Pets'],
     ['settings', 'settings', 'Settings'],
   ].map(([path, icon, label]) => ({ path, icon, label }));
 

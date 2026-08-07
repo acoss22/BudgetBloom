@@ -3,6 +3,7 @@ using System;
 using Finora.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Finora.Api.Data.Migrations
 {
     [DbContext(typeof(FinoraDbContext))]
-    partial class FinoraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807150051_AddPetExpenses")]
+    partial class AddPetExpenses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,84 +133,6 @@ namespace Finora.Api.Data.Migrations
                     b.HasIndex("UserId", "Name");
 
                     b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("Finora.Api.Data.FinancialProduct", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("CreditLimit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("CurrencyCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("CurrentBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateOnly?>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("ExpiryDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Institution")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("InterestRate")
-                        .HasPrecision(7, 4)
-                        .HasColumnType("numeric(7,4)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LastFourDigits")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("MonthlyPayment")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("OriginalPrincipal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<int?>("PaymentDay")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductType")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly?>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "ProductType", "Name");
-
-                    b.ToTable("FinancialProducts");
                 });
 
             modelBuilder.Entity("Finora.Api.Data.HouseholdBill", b =>
@@ -860,15 +785,6 @@ namespace Finora.Api.Data.Migrations
                 });
 
             modelBuilder.Entity("Finora.Api.Data.Category", b =>
-                {
-                    b.HasOne("Finora.Api.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Finora.Api.Data.FinancialProduct", b =>
                 {
                     b.HasOne("Finora.Api.Identity.ApplicationUser", null)
                         .WithMany()

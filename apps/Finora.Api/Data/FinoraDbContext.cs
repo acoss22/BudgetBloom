@@ -6,7 +6,7 @@ namespace Finora.Api.Data;
 
 public sealed class FinoraDbContext(DbContextOptions<FinoraDbContext> options) : IdentityDbContext<ApplicationUser, Microsoft.AspNetCore.Identity.IdentityRole<Guid>, Guid>(options)
 {
-    public DbSet<Account> Accounts => Set<Account>(); public DbSet<Category> Categories => Set<Category>(); public DbSet<Transaction> Transactions => Set<Transaction>(); public DbSet<Budget> Budgets => Set<Budget>(); public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>(); public DbSet<Mortgage> Mortgages => Set<Mortgage>(); public DbSet<HouseholdBill> HouseholdBills => Set<HouseholdBill>(); public DbSet<MedicalExpense> MedicalExpenses => Set<MedicalExpense>(); public DbSet<SupermarketExpense> SupermarketExpenses => Set<SupermarketExpense>(); public DbSet<PersonalExpense> PersonalExpenses => Set<PersonalExpense>();
+    public DbSet<Account> Accounts => Set<Account>(); public DbSet<Category> Categories => Set<Category>(); public DbSet<Transaction> Transactions => Set<Transaction>(); public DbSet<Budget> Budgets => Set<Budget>(); public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>(); public DbSet<Mortgage> Mortgages => Set<Mortgage>(); public DbSet<HouseholdBill> HouseholdBills => Set<HouseholdBill>(); public DbSet<MedicalExpense> MedicalExpenses => Set<MedicalExpense>(); public DbSet<SupermarketExpense> SupermarketExpenses => Set<SupermarketExpense>(); public DbSet<PersonalExpense> PersonalExpenses => Set<PersonalExpense>(); public DbSet<PetExpense> PetExpenses => Set<PetExpense>(); public DbSet<FinancialProduct> FinancialProducts => Set<FinancialProduct>();
     protected override void OnModelCreating(ModelBuilder b)
     {
         base.OnModelCreating(b);
@@ -16,12 +16,16 @@ public sealed class FinoraDbContext(DbContextOptions<FinoraDbContext> options) :
         b.Entity<MedicalExpense>().HasIndex(x => new { x.UserId, x.ExpenseDate });
         b.Entity<SupermarketExpense>().HasIndex(x => new { x.UserId, x.ExpenseDate });
         b.Entity<PersonalExpense>().HasIndex(x => new { x.UserId, x.Area, x.ExpenseDate });
+        b.Entity<PetExpense>().HasIndex(x => new { x.UserId, x.ExpenseDate });
+        b.Entity<FinancialProduct>().HasIndex(x => new { x.UserId, x.ProductType, x.Name });
         b.Entity<Account>().Property(x => x.InitialBalance).HasPrecision(18, 2); b.Entity<Transaction>().Property(x => x.Amount).HasPrecision(18, 2); b.Entity<Budget>().Property(x => x.Amount).HasPrecision(18, 2); b.Entity<RecurringTransaction>().Property(x => x.Amount).HasPrecision(18, 2);
         b.Entity<Mortgage>().Property(x => x.OriginalPrincipal).HasPrecision(18, 2); b.Entity<Mortgage>().Property(x => x.OutstandingBalance).HasPrecision(18, 2); b.Entity<Mortgage>().Property(x => x.InterestRate).HasPrecision(7, 4); b.Entity<Mortgage>().Property(x => x.MonthlyPayment).HasPrecision(18, 2);
         b.Entity<HouseholdBill>().Property(x => x.Amount).HasPrecision(18, 2);
         b.Entity<MedicalExpense>().Property(x => x.Amount).HasPrecision(18, 2);
         b.Entity<SupermarketExpense>().Property(x => x.Amount).HasPrecision(18, 2);
         b.Entity<PersonalExpense>().Property(x => x.Amount).HasPrecision(18, 2);
+        b.Entity<PetExpense>().Property(x => x.Amount).HasPrecision(18, 2);
+        b.Entity<FinancialProduct>().Property(x => x.CurrentBalance).HasPrecision(18, 2); b.Entity<FinancialProduct>().Property(x => x.CreditLimit).HasPrecision(18, 2); b.Entity<FinancialProduct>().Property(x => x.OriginalPrincipal).HasPrecision(18, 2); b.Entity<FinancialProduct>().Property(x => x.InterestRate).HasPrecision(7, 4); b.Entity<FinancialProduct>().Property(x => x.MonthlyPayment).HasPrecision(18, 2);
         b.Entity<Account>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<Category>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<Transaction>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
@@ -37,5 +41,7 @@ public sealed class FinoraDbContext(DbContextOptions<FinoraDbContext> options) :
         b.Entity<MedicalExpense>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<SupermarketExpense>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<PersonalExpense>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<PetExpense>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<FinancialProduct>().HasOne<Finora.Api.Identity.ApplicationUser>().WithMany().HasForeignKey(x=>x.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }

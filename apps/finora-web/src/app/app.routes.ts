@@ -11,6 +11,11 @@ export const routes: Routes = [
     { path: 'supermarket-expenses', loadComponent: () => import('./features/supermarket-expenses/supermarket-expenses').then(m => m.SupermarketExpensesComponent) },
     { path: 'education-expenses', loadComponent: () => import('./features/personal-expenses/personal-expenses').then(m => m.PersonalExpensesComponent), data: { area: 0 } },
     { path: 'entertainment-expenses', loadComponent: () => import('./features/personal-expenses/personal-expenses').then(m => m.PersonalExpensesComponent), data: { area: 1 } },
+    { path: 'pet-expenses', loadComponent: () => import('./features/pet-expenses/pet-expenses').then(m => m.PetExpensesComponent) },
+    { path: 'loans', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 0 } },
+    { path: 'credit-cards', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 1 } },
+    { path: 'debit-cards', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 2 } },
+    { path: 'investments', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 3 } },
     ...['accounts','transactions','categories','budgets','recurring-transactions','settings'].map(path => ({ path, loadComponent: () => import('./features/placeholder').then(m => m.PlaceholderComponent), data: { title: path } })),
     { path: '', pathMatch: 'full' as const, redirectTo: 'dashboard' }
   ]}, { path: '**', redirectTo: 'dashboard' }
