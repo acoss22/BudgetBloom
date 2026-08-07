@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { ExportData, ExportMenuComponent } from '../../core/export/export-menu';
 
 interface HouseholdBill {
   id: string;
@@ -36,6 +37,7 @@ interface HouseholdBill {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
+    ExportMenuComponent,
   ],
   template: `
     <header>
@@ -45,10 +47,7 @@ interface HouseholdBill {
           <h1>Household bills</h1>
           <p>Plan your essential monthly costs and see them reflected in your financial overview.</p>
         </div>
-        <button mat-stroked-button type="button" (click)="downloadBills()" [disabled]="loading() || !bills().length">
-          <mat-icon>download</mat-icon>
-          Download all bills
-        </button>
+        <app-export-menu [data]="exportData()" />
       </div>
     </header>
 
@@ -189,35 +188,10 @@ export class HouseholdBillsComponent implements OnInit {
   dateError() { const { startDate, endDate } = this.form.getRawValue(); return !!endDate && endDate < startDate; }
   typeLabel(type: number) { return this.billTypes.find(item => item.value === type)?.label ?? 'Other'; }
   typeIcon(type: number) { return this.billTypes.find(item => item.value === type)?.icon ?? 'receipt_long'; }
-  downloadBills() {
+  exportData(): ExportData {
     const bills = this.bills();
-    if (!bills.length) return;
-
     const total = bills.filter(bill => bill.isActive).reduce((sum, bill) => sum + bill.amount, 0);
-    const lines = [
-      'FINORA HOUSEHOLD BILLS',
-      `Exported: ${new Date().toLocaleString()}`,
-      `Bills: ${bills.length}`,
-      `Active monthly total: ${total.toFixed(2)} EUR`,
-      '',
-      ...bills.flatMap((bill, index) => [
-        `${index + 1}. ${bill.name}`,
-        `Type: ${this.typeLabel(bill.billType)}`,
-        `Provider: ${bill.provider}`,
-        `Amount: ${bill.amount.toFixed(2)} ${bill.currencyCode} per month`,
-        `Billing day: ${bill.billingDay}`,
-        `Status: ${bill.isActive ? 'Active' : 'Paused'}`,
-        `Start date: ${bill.startDate}`,
-        `End date: ${bill.endDate ?? 'Ongoing'}`,
-        '',
-      ]),
-    ];
-    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `finora-household-bills-${new Date().toISOString().slice(0, 10)}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    return { title:'Finora Household Bills', fileName:'finora-household-bills', columns:['Name','Type','Provider','Monthly amount','Currency','Billing day','Status','Start date','End date'], rows:bills.map(bill=>[bill.name,this.typeLabel(bill.billType),bill.provider,bill.amount.toFixed(2),bill.currencyCode,bill.billingDay,bill.isActive?'Active':'Paused',bill.startDate,bill.endDate??'Ongoing']), summary:[`Bills: ${bills.length}`,`Active monthly total: ${total.toFixed(2)} EUR`] };
   }
   save() {
     if (this.form.invalid || this.dateError()) return;
