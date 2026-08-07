@@ -17,5 +17,6 @@ WORKDIR /app
 COPY --from=api-build /app ./
 COPY --from=frontend-build /src/frontend/dist/finora-web/browser ./wwwroot
 ENV ASPNETCORE_URLS=http://0.0.0.0:10000
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
 EXPOSE 10000
 ENTRYPOINT ["dotnet", "Finora.Api.dll"]
