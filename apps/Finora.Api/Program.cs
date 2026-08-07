@@ -47,11 +47,14 @@ await using (var scope = app.Services.CreateAsyncScope())
 app.UseExceptionHandler();
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseCors("web");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapFinoraEndpoints();
+app.MapFallbackToFile("index.html");
 app.Run();
 
 public partial class Program;
