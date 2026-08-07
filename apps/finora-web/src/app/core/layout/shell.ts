@@ -144,6 +144,7 @@ export class ShellComponent {
     ['budgets', 'savings', 'Budgets'],
     ['recurring-transactions', 'repeat', 'Recurring'],
     ['mortgages', 'cottage', 'Mortgages'],
+    ['household-bills', 'receipt_long', 'Household bills'],
     ['settings', 'settings', 'Settings'],
   ].map(([path, icon, label]) => ({ path, icon, label }));
 
