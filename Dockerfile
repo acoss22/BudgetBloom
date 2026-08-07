@@ -10,7 +10,7 @@ WORKDIR /src/api
 COPY apps/Finora.Api/Finora.Api.csproj ./
 RUN dotnet restore
 COPY apps/Finora.Api/ ./
-RUN dotnet publish -c Release -o /app --no-restore
+RUN dotnet publish -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
