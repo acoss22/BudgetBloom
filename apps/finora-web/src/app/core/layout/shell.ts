@@ -23,7 +23,7 @@ import { AuthService } from '../auth/auth.service';
   template: `
     <mat-sidenav-container>
       <mat-sidenav #drawer [mode]="isMobile() ? 'over' : 'side'" [opened]="!isMobile()">
-        <a class="brand" routerLink="/dashboard" (click)="closeNavigation(drawer)"><span><mat-icon>spa</mat-icon></span><span class="brand-copy">Finora<small>Money, made clearer</small></span></a>
+        <a class="brand" routerLink="/dashboard" (click)="closeNavigation(drawer)"><img src="finora-mark.svg" alt=""><span class="brand-copy">Finora<small>Money, made clearer</small></span></a>
         <p class="nav-label">Workspace</p>
         <nav aria-label="Main navigation">
           @for (item of nav; track item.path) {
@@ -40,6 +40,7 @@ import { AuthService } from '../auth/auth.service';
           <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle navigation">
             <mat-icon>menu</mat-icon>
           </button>
+          <a class="mobile-brand" routerLink="/dashboard" aria-label="Finora dashboard"><img src="finora-mark.svg" alt=""><span>Finora</span></a>
           <span class="toolbar-title">Financial workspace</span>
           <span class="spacer"></span>
           <span class="user"><mat-icon>account_circle</mat-icon><span>{{ auth.user()?.displayName }}</span></span>
@@ -76,15 +77,7 @@ import { AuthService } from '../auth/auth.service';
         font-weight: 700;
         margin: 0 .35rem 2rem;
       }
-      .brand span {
-        display: grid;
-        place-items: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 12px;
-        background: #9bdd79;
-        color: #143a2a;
-      }
+      .brand>img{width:40px;height:40px;border-radius:12px;box-shadow:0 5px 14px rgba(0,0,0,.2)}
       .brand-copy{display:grid;line-height:1.1}.brand-copy small{margin-top:.3rem;color:#bcd1c4;font-size:.68rem;font-weight:400;letter-spacing:.02em}.nav-label{margin:0 .8rem .55rem;color:#91ad9d;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
       nav {
         display: grid;
@@ -113,6 +106,7 @@ import { AuthService } from '../auth/auth.service';
         border-bottom: 1px solid #e2e8e4;
       }
       .toolbar-title{font-size:.9rem;font-weight:600;color:#52675c}.user{display:flex;align-items:center;gap:.45rem;margin-right:.5rem;color:#334b3f;font-size:.88rem}.user mat-icon{color:#397454}.sidebar-note{display:flex;gap:.7rem;align-items:center;position:absolute;right:1rem;bottom:1.1rem;left:1rem;padding:.85rem;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.06);color:#dce9e1}.sidebar-note>mat-icon{color:#9bdd79}.sidebar-note span{display:grid}.sidebar-note small{margin-top:.15rem;color:#9fbaaa;font-size:.68rem}.sidebar-note strong{font-size:.76rem}
+      .mobile-brand{display:none;align-items:center;gap:.5rem;color:#183329;text-decoration:none;font-weight:700}.mobile-brand img{width:30px;height:30px;border-radius:9px}
       .spacer {
         flex: 1;
       }
@@ -133,7 +127,7 @@ import { AuthService } from '../auth/auth.service';
         mat-sidenav {
           width:min(290px,86vw);
         }
-        .toolbar-title,.user span,.logout-label{display:none}.user{margin:0}.content{padding:1rem}mat-toolbar{padding:0 .55rem}
+        .toolbar-title,.user span,.logout-label{display:none}.mobile-brand{display:flex}.user{margin:0}.content{padding:1rem}mat-toolbar{padding:0 .55rem}
       }
     `,
   ],
