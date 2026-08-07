@@ -135,7 +135,7 @@ import { AuthService } from '../auth/auth.service';
 export class ShellComponent {
   readonly auth = inject(AuthService);
   readonly isMobile = toSignal(inject(BreakpointObserver).observe('(max-width: 700px)').pipe(map(result => result.matches)), { initialValue: false });
-  readonly version = '0.0.0';
+  readonly version = '1.0.0';
   private readonly router = inject(Router);
 
   readonly nav = [

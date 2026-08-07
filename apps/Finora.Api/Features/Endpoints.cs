@@ -57,7 +57,7 @@ public static class Endpoints
         MapFinancialProducts(api,"credit-cards",FinancialProductType.CreditCard);
         MapFinancialProducts(api,"debit-cards",FinancialProductType.DebitCard);
         MapFinancialProducts(api,"investments",FinancialProductType.Investment);
-        api.MapGet("/dashboard/summary", (HttpContext c,FinanceService s,int month,int year)=>s.Dashboard(FinanceService.UserId(c.User),month,year));
+        api.MapGet("/dashboard/summary", (HttpContext c,FinanceService s,int month,int year)=>s.DashboardWithRecentActivity(FinanceService.UserId(c.User),month,year));
         api.MapDelete("/{resource}/{id:guid}", Delete);
     }
 
