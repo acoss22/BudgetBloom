@@ -9,6 +9,8 @@ export const routes: Routes = [
     { path: 'household-bills', loadComponent: () => import('./features/household-bills/household-bills').then(m => m.HouseholdBillsComponent) },
     { path: 'medical-expenses', loadComponent: () => import('./features/medical-expenses/medical-expenses').then(m => m.MedicalExpensesComponent) },
     { path: 'supermarket-expenses', loadComponent: () => import('./features/supermarket-expenses/supermarket-expenses').then(m => m.SupermarketExpensesComponent) },
+    { path: 'education-expenses', loadComponent: () => import('./features/personal-expenses/personal-expenses').then(m => m.PersonalExpensesComponent), data: { area: 0 } },
+    { path: 'entertainment-expenses', loadComponent: () => import('./features/personal-expenses/personal-expenses').then(m => m.PersonalExpensesComponent), data: { area: 1 } },
     ...['accounts','transactions','categories','budgets','recurring-transactions','settings'].map(path => ({ path, loadComponent: () => import('./features/placeholder').then(m => m.PlaceholderComponent), data: { title: path } })),
     { path: '', pathMatch: 'full' as const, redirectTo: 'dashboard' }
   ]}, { path: '**', redirectTo: 'dashboard' }

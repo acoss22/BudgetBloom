@@ -149,6 +149,8 @@ export class ShellComponent {
     ['household-bills', 'home_work', 'Household bills'],
     ['medical-expenses', 'medical_services', 'Medical expenses'],
     ['supermarket-expenses', 'shopping_cart', 'Supermarket'],
+    ['education-expenses', 'school', 'Education'],
+    ['entertainment-expenses', 'sports_esports', 'Entertainment'],
     ['settings', 'settings', 'Settings'],
   ].map(([path, icon, label]) => ({ path, icon, label }));
 
