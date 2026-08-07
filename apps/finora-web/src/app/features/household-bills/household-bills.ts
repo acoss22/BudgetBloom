@@ -22,6 +22,7 @@ interface HouseholdBill {
   startDate: string;
   endDate: string | null;
   isActive: boolean;
+  isRecurring: boolean;
 }
 
 @Component({
@@ -103,7 +104,7 @@ interface HouseholdBill {
               <input matInput type="date" formControlName="endDate" />
             </mat-form-field>
           </div>
-          <mat-checkbox formControlName="isActive">Include this bill in monthly expenses</mat-checkbox>
+          <div class="toggles"><mat-checkbox formControlName="isActive">Include this bill in monthly expenses</mat-checkbox><mat-checkbox formControlName="isRecurring">Show this bill in Recurring</mat-checkbox></div>
           @if (dateError()) {
             <p class="error">The end date cannot be before the start date.</p>
           }
@@ -144,6 +145,7 @@ interface HouseholdBill {
             <dl>
               <div><dt>Billing date</dt><dd>Day {{ bill.billingDay }}</dd></div>
               <div><dt>Status</dt><dd>{{ bill.isActive ? 'Active' : 'Paused' }}</dd></div>
+              <div><dt>Schedule</dt><dd>{{ bill.isRecurring ? 'Recurring monthly' : 'One-off bill' }}</dd></div>
               <div><dt>Started</dt><dd>{{ bill.startDate | date: 'mediumDate' }}</dd></div>
               <div><dt>Ends</dt><dd>{{ bill.endDate ? (bill.endDate | date: 'mediumDate') : 'Ongoing' }}</dd></div>
             </dl>
@@ -153,7 +155,7 @@ interface HouseholdBill {
     </div>
   `,
   styles: [`
-    header h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.15rem 0}.eyebrow{letter-spacing:.15em;color:#397454;font-weight:700}.header-row{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}.header-row p{margin-bottom:0}.header-row button{flex:0 0 auto}.summary{display:grid;grid-template-columns:repeat(2,minmax(220px,320px));gap:1rem;margin:2rem 0}.summary mat-card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.2rem 1rem;padding:1rem 1.2rem}.summary mat-icon{grid-row:1/3;color:#397454}.summary span{color:#68766f}.summary strong{font-size:1.4rem}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:1.25rem;align-items:start}mat-card{padding:1.3rem}.form-card h2{margin-bottom:1.3rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.wide{grid-column:1/-1}.form-actions{display:flex;gap:.5rem;align-items:center;margin-top:1rem}.form-actions button:first-child{flex:1}.bills{display:grid;gap:1rem}.empty{min-height:220px;display:grid;place-content:center;text-align:center;color:#66756d}.empty mat-icon{margin:auto;font-size:42px;width:42px;height:42px;color:#397454}.bill.inactive{opacity:.72}.bill-head{display:flex;gap:1rem}.type-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#e1f0e4;color:#285844}.bill-title{display:flex;justify-content:space-between;gap:1rem;min-width:0;flex:1}.bill h2{font-size:1.15rem;margin:0}.bill p,.amount span,dt{color:#68766f}.bill p{margin:.2rem 0}.actions{display:flex}.amount{display:flex;align-items:baseline;gap:.45rem;margin:1.2rem 0}.amount strong{font-size:1.75rem}.amount span{font-size:.85rem}dl{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0}dt{font-size:.75rem}dd{margin:.2rem 0 0;font-weight:600}.error{color:#b3261e;font-size:.85rem}@media(max-width:1000px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.header-row{align-items:stretch;flex-direction:column}.header-row button{align-self:flex-start}.summary,.fields,dl{grid-template-columns:1fr}.summary{margin:1.4rem 0}.wide{grid-column:auto}.bill-title{align-items:flex-start}.actions{margin-right:-.5rem}}
+    header h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.15rem 0}.eyebrow{letter-spacing:.15em;color:#397454;font-weight:700}.header-row{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}.header-row p{margin-bottom:0}.header-row button{flex:0 0 auto}.summary{display:grid;grid-template-columns:repeat(2,minmax(220px,320px));gap:1rem;margin:2rem 0}.summary mat-card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.2rem 1rem;padding:1rem 1.2rem}.summary mat-icon{grid-row:1/3;color:#397454}.summary span{color:#68766f}.summary strong{font-size:1.4rem}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:1.25rem;align-items:start}mat-card{padding:1.3rem}.form-card h2{margin-bottom:1.3rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.wide{grid-column:1/-1}.toggles{display:grid;gap:.25rem}.form-actions{display:flex;gap:.5rem;align-items:center;margin-top:1rem}.form-actions button:first-child{flex:1}.bills{display:grid;gap:1rem}.empty{min-height:220px;display:grid;place-content:center;text-align:center;color:#66756d}.empty mat-icon{margin:auto;font-size:42px;width:42px;height:42px;color:#397454}.bill.inactive{opacity:.72}.bill-head{display:flex;gap:1rem}.type-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#e1f0e4;color:#285844}.bill-title{display:flex;justify-content:space-between;gap:1rem;min-width:0;flex:1}.bill h2{font-size:1.15rem;margin:0}.bill p,.amount span,dt{color:#68766f}.bill p{margin:.2rem 0}.actions{display:flex}.amount{display:flex;align-items:baseline;gap:.45rem;margin:1.2rem 0}.amount strong{font-size:1.75rem}.amount span{font-size:.85rem}dl{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0}dt{font-size:.75rem}dd{margin:.2rem 0 0;font-weight:600}.error{color:#b3261e;font-size:.85rem}@media(max-width:1000px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.header-row{align-items:stretch;flex-direction:column}.header-row button{align-self:flex-start}.summary,.fields,dl{grid-template-columns:1fr}.summary{margin:1.4rem 0}.wide{grid-column:auto}.bill-title{align-items:flex-start}.actions{margin-right:-.5rem}}
   `],
 })
 export class HouseholdBillsComponent implements OnInit {
@@ -179,6 +181,7 @@ export class HouseholdBillsComponent implements OnInit {
     startDate: new FormControl(new Date().toISOString().slice(0, 10), { nonNullable: true, validators: [Validators.required] }),
     endDate: new FormControl('', { nonNullable: true }),
     isActive: new FormControl(true, { nonNullable: true }),
+    isRecurring: new FormControl(true, { nonNullable: true }),
   });
 
   ngOnInit() { this.load(); }
@@ -191,7 +194,7 @@ export class HouseholdBillsComponent implements OnInit {
   exportData(): ExportData {
     const bills = this.bills();
     const total = bills.filter(bill => bill.isActive).reduce((sum, bill) => sum + bill.amount, 0);
-    return { title:'Finora Household Bills', fileName:'finora-household-bills', columns:['Name','Type','Provider','Monthly amount','Currency','Billing day','Status','Start date','End date'], rows:bills.map(bill=>[bill.name,this.typeLabel(bill.billType),bill.provider,bill.amount.toFixed(2),bill.currencyCode,bill.billingDay,bill.isActive?'Active':'Paused',bill.startDate,bill.endDate??'Ongoing']), summary:[`Bills: ${bills.length}`,`Active monthly total: ${total.toFixed(2)} EUR`] };
+    return { title:'Finora Household Bills', fileName:'finora-household-bills', columns:['Name','Type','Provider','Monthly amount','Currency','Billing day','Status','Recurring','Start date','End date'], rows:bills.map(bill=>[bill.name,this.typeLabel(bill.billType),bill.provider,bill.amount.toFixed(2),bill.currencyCode,bill.billingDay,bill.isActive?'Active':'Paused',bill.isRecurring?'Yes':'No',bill.startDate,bill.endDate??'Ongoing']), summary:[`Bills: ${bills.length}`,`Active monthly total: ${total.toFixed(2)} EUR`] };
   }
   save() {
     if (this.form.invalid || this.dateError()) return;
@@ -204,9 +207,9 @@ export class HouseholdBillsComponent implements OnInit {
   }
   edit(bill: HouseholdBill) {
     this.editingId.set(bill.id);
-    this.form.setValue({ name: bill.name, provider: bill.provider, billType: bill.billType, amount: bill.amount, currencyCode: bill.currencyCode, billingDay: bill.billingDay, startDate: bill.startDate, endDate: bill.endDate ?? '', isActive: bill.isActive });
+    this.form.setValue({ name: bill.name, provider: bill.provider, billType: bill.billType, amount: bill.amount, currencyCode: bill.currencyCode, billingDay: bill.billingDay, startDate: bill.startDate, endDate: bill.endDate ?? '', isActive: bill.isActive, isRecurring: bill.isRecurring });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  cancelEdit() { this.editingId.set(null); this.form.reset({ billType: 0, currencyCode: 'EUR', billingDay: 1, startDate: new Date().toISOString().slice(0, 10), endDate: '', isActive: true }); }
+  cancelEdit() { this.editingId.set(null); this.form.reset({ billType: 0, currencyCode: 'EUR', billingDay: 1, startDate: new Date().toISOString().slice(0, 10), endDate: '', isActive: true, isRecurring: true }); }
   remove(bill: HouseholdBill) { if (!confirm(`Delete ${bill.name}?`)) return; this.http.delete(`/api/household-bills/${bill.id}`).subscribe(() => this.bills.update(items => items.filter(item => item.id !== bill.id))); }
 }
