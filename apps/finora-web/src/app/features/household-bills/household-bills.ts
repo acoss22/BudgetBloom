@@ -40,8 +40,16 @@ interface HouseholdBill {
   template: `
     <header>
       <p class="eyebrow">HOME EXPENSES</p>
-      <h1>Household bills</h1>
-      <p>Plan your essential monthly costs and see them reflected in your financial overview.</p>
+      <div class="header-row">
+        <div>
+          <h1>Household bills</h1>
+          <p>Plan your essential monthly costs and see them reflected in your financial overview.</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="downloadBills()" [disabled]="loading() || !bills().length">
+          <mat-icon>download</mat-icon>
+          Download all bills
+        </button>
+      </div>
     </header>
 
     <section class="summary" aria-label="Household bills summary">
@@ -146,7 +154,7 @@ interface HouseholdBill {
     </div>
   `,
   styles: [`
-    header h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.15rem 0}.eyebrow{letter-spacing:.15em;color:#397454;font-weight:700}.summary{display:grid;grid-template-columns:repeat(2,minmax(220px,320px));gap:1rem;margin:2rem 0}.summary mat-card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.2rem 1rem;padding:1rem 1.2rem}.summary mat-icon{grid-row:1/3;color:#397454}.summary span{color:#68766f}.summary strong{font-size:1.4rem}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:1.25rem;align-items:start}mat-card{padding:1.3rem}.form-card h2{margin-bottom:1.3rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.wide{grid-column:1/-1}.form-actions{display:flex;gap:.5rem;align-items:center;margin-top:1rem}.form-actions button:first-child{flex:1}.bills{display:grid;gap:1rem}.empty{min-height:220px;display:grid;place-content:center;text-align:center;color:#66756d}.empty mat-icon{margin:auto;font-size:42px;width:42px;height:42px;color:#397454}.bill.inactive{opacity:.72}.bill-head{display:flex;gap:1rem}.type-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#e1f0e4;color:#285844}.bill-title{display:flex;justify-content:space-between;gap:1rem;min-width:0;flex:1}.bill h2{font-size:1.15rem;margin:0}.bill p,.amount span,dt{color:#68766f}.bill p{margin:.2rem 0}.actions{display:flex}.amount{display:flex;align-items:baseline;gap:.45rem;margin:1.2rem 0}.amount strong{font-size:1.75rem}.amount span{font-size:.85rem}dl{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0}dt{font-size:.75rem}dd{margin:.2rem 0 0;font-weight:600}.error{color:#b3261e;font-size:.85rem}@media(max-width:1000px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.summary,.fields,dl{grid-template-columns:1fr}.summary{margin:1.4rem 0}.wide{grid-column:auto}.bill-title{align-items:flex-start}.actions{margin-right:-.5rem}}
+    header h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.15rem 0}.eyebrow{letter-spacing:.15em;color:#397454;font-weight:700}.header-row{display:flex;justify-content:space-between;align-items:center;gap:1.5rem}.header-row p{margin-bottom:0}.header-row button{flex:0 0 auto}.summary{display:grid;grid-template-columns:repeat(2,minmax(220px,320px));gap:1rem;margin:2rem 0}.summary mat-card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.2rem 1rem;padding:1rem 1.2rem}.summary mat-icon{grid-row:1/3;color:#397454}.summary span{color:#68766f}.summary strong{font-size:1.4rem}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:1.25rem;align-items:start}mat-card{padding:1.3rem}.form-card h2{margin-bottom:1.3rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.wide{grid-column:1/-1}.form-actions{display:flex;gap:.5rem;align-items:center;margin-top:1rem}.form-actions button:first-child{flex:1}.bills{display:grid;gap:1rem}.empty{min-height:220px;display:grid;place-content:center;text-align:center;color:#66756d}.empty mat-icon{margin:auto;font-size:42px;width:42px;height:42px;color:#397454}.bill.inactive{opacity:.72}.bill-head{display:flex;gap:1rem}.type-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#e1f0e4;color:#285844}.bill-title{display:flex;justify-content:space-between;gap:1rem;min-width:0;flex:1}.bill h2{font-size:1.15rem;margin:0}.bill p,.amount span,dt{color:#68766f}.bill p{margin:.2rem 0}.actions{display:flex}.amount{display:flex;align-items:baseline;gap:.45rem;margin:1.2rem 0}.amount strong{font-size:1.75rem}.amount span{font-size:.85rem}dl{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:0}dt{font-size:.75rem}dd{margin:.2rem 0 0;font-weight:600}.error{color:#b3261e;font-size:.85rem}@media(max-width:1000px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.header-row{align-items:stretch;flex-direction:column}.header-row button{align-self:flex-start}.summary,.fields,dl{grid-template-columns:1fr}.summary{margin:1.4rem 0}.wide{grid-column:auto}.bill-title{align-items:flex-start}.actions{margin-right:-.5rem}}
   `],
 })
 export class HouseholdBillsComponent implements OnInit {
@@ -181,6 +189,36 @@ export class HouseholdBillsComponent implements OnInit {
   dateError() { const { startDate, endDate } = this.form.getRawValue(); return !!endDate && endDate < startDate; }
   typeLabel(type: number) { return this.billTypes.find(item => item.value === type)?.label ?? 'Other'; }
   typeIcon(type: number) { return this.billTypes.find(item => item.value === type)?.icon ?? 'receipt_long'; }
+  downloadBills() {
+    const bills = this.bills();
+    if (!bills.length) return;
+
+    const total = bills.filter(bill => bill.isActive).reduce((sum, bill) => sum + bill.amount, 0);
+    const lines = [
+      'FINORA HOUSEHOLD BILLS',
+      `Exported: ${new Date().toLocaleString()}`,
+      `Bills: ${bills.length}`,
+      `Active monthly total: ${total.toFixed(2)} EUR`,
+      '',
+      ...bills.flatMap((bill, index) => [
+        `${index + 1}. ${bill.name}`,
+        `Type: ${this.typeLabel(bill.billType)}`,
+        `Provider: ${bill.provider}`,
+        `Amount: ${bill.amount.toFixed(2)} ${bill.currencyCode} per month`,
+        `Billing day: ${bill.billingDay}`,
+        `Status: ${bill.isActive ? 'Active' : 'Paused'}`,
+        `Start date: ${bill.startDate}`,
+        `End date: ${bill.endDate ?? 'Ongoing'}`,
+        '',
+      ]),
+    ];
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `finora-household-bills-${new Date().toISOString().slice(0, 10)}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
   save() {
     if (this.form.invalid || this.dateError()) return;
     this.saving.set(true);
