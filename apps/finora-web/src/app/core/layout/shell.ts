@@ -153,6 +153,7 @@ export class ShellComponent {
     ['recurring-transactions', 'repeat', 'Recurring'],
     ['mortgages', 'cottage', 'Mortgages'],
     ['household-bills', 'home_work', 'Household bills'],
+    ['medical-expenses', 'medical_services', 'Medical expenses'],
     ['settings', 'settings', 'Settings'],
   ].map(([path, icon, label]) => ({ path, icon, label }));
 

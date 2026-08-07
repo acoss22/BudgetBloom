@@ -10,6 +10,7 @@ interface DashboardSummary {
   monthlyExpenses: number;
   mortgageExpenses: number;
   householdBillExpenses: number;
+  medicalExpenses: number;
   remainingBudget: number;
   recentTransactions: { id:string; description:string; amount:number; transactionDate:string; transactionType:number }[];
   spendingByCategory: { category:string; amount:number }[];
@@ -22,7 +23,7 @@ interface DashboardSummary {
     <header><p class="eyebrow">OVERVIEW</p><h1>Your financial garden</h1><p>A calm snapshot of your money this month.</p></header>
     <section class="metrics">@for(card of cards();track card.label){<mat-card><mat-icon>{{card.icon}}</mat-icon><span>{{card.label}}</span><strong>{{card.value|currency:'EUR'}}</strong><small>{{card.note}}</small></mat-card>}</section>
     <section class="panels">
-      <mat-card><h2>Monthly cash flow</h2><div class="flow"><div><span>Income</span><strong class="income">{{summary()?.monthlyIncome ?? 0 | currency:'EUR'}}</strong></div><div><span>Expenses</span><strong class="expense">{{summary()?.monthlyExpenses ?? 0 | currency:'EUR'}}</strong></div></div>@if((summary()?.mortgageExpenses ?? 0)>0){<p class="expense-note"><mat-icon>cottage</mat-icon> Includes {{summary()!.mortgageExpenses | currency:'EUR'}} in mortgage payments.</p>}@if((summary()?.householdBillExpenses ?? 0)>0){<p class="expense-note"><mat-icon>receipt_long</mat-icon> Includes {{summary()!.householdBillExpenses | currency:'EUR'}} in household bills.</p>}</mat-card>
+      <mat-card><h2>Monthly cash flow</h2><div class="flow"><div><span>Income</span><strong class="income">{{summary()?.monthlyIncome ?? 0 | currency:'EUR'}}</strong></div><div><span>Expenses</span><strong class="expense">{{summary()?.monthlyExpenses ?? 0 | currency:'EUR'}}</strong></div></div>@if((summary()?.mortgageExpenses ?? 0)>0){<p class="expense-note"><mat-icon>cottage</mat-icon> Includes {{summary()!.mortgageExpenses | currency:'EUR'}} in mortgage payments.</p>}@if((summary()?.householdBillExpenses ?? 0)>0){<p class="expense-note"><mat-icon>home_work</mat-icon> Includes {{summary()!.householdBillExpenses | currency:'EUR'}} in household bills.</p>}@if((summary()?.medicalExpenses ?? 0)>0){<p class="expense-note"><mat-icon>medical_services</mat-icon> Includes {{summary()!.medicalExpenses | currency:'EUR'}} in medical expenses.</p>}</mat-card>
       <mat-card><h2>Spending by category</h2>@if(summary()?.spendingByCategory?.length){<div class="categories">@for(item of summary()!.spendingByCategory;track item.category){<div><span>{{item.category}}</span><strong>{{item.amount|currency:'EUR'}}</strong></div>}</div>}@else{<div class="empty">No spending recorded this month.</div>}</mat-card>
       <mat-card class="recent"><h2>Recent transactions</h2>@if(summary()?.recentTransactions?.length){<div class="transactions">@for(item of summary()!.recentTransactions;track item.id){<div><span><strong>{{item.description}}</strong><small>{{item.transactionDate|date:'mediumDate'}}</small></span><strong [class.expense]="item.transactionType===1">{{item.transactionType===1?'-':'+'}}{{item.amount|currency:'EUR'}}</strong></div>}</div>}@else{<div class="empty">Your newest transactions will appear here.</div>}</mat-card>
     </section>`,

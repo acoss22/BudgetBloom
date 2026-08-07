@@ -1,0 +1,82 @@
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+
+interface MedicalExpense {
+  id: string;
+  description: string;
+  provider: string;
+  expenseType: number;
+  amount: number;
+  currencyCode: string;
+  expenseDate: string;
+  notes: string | null;
+  isReimbursable: boolean;
+}
+
+@Component({
+  standalone: true,
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, MatButtonModule, MatCardModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  template: `
+    <header><p class="eyebrow">HEALTH & WELLBEING</p><h1>Medical expenses</h1><p>Keep pharmacy purchases, appointments, exams, and other health costs organised.</p></header>
+    <section class="summary" aria-label="Medical expenses summary">
+      <mat-card><span class="summary-icon"><mat-icon>medical_services</mat-icon></span><span>This month</span><strong>{{currentMonthTotal()|currency:'EUR'}}</strong></mat-card>
+      <mat-card><span class="summary-icon"><mat-icon>assignment_return</mat-icon></span><span>Reimbursable</span><strong>{{reimbursableCount()}}</strong></mat-card>
+    </section>
+    <div class="layout">
+      <mat-card class="form-card">
+        <h2>{{editingId()?'Edit medical expense':'Add medical expense'}}</h2>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="fields">
+            <mat-form-field><mat-label>Expense type</mat-label><mat-select formControlName="expenseType">@for(type of expenseTypes;track type.value){<mat-option [value]="type.value"><mat-icon>{{type.icon}}</mat-icon>{{type.label}}</mat-option>}</mat-select></mat-form-field>
+            <mat-form-field><mat-label>Date</mat-label><input matInput type="date" formControlName="expenseDate"></mat-form-field>
+            <mat-form-field class="wide"><mat-label>Description</mat-label><input matInput formControlName="description" placeholder="Prescription medicine or annual check-up"></mat-form-field>
+            <mat-form-field class="wide"><mat-label>Pharmacy, clinic, or provider</mat-label><input matInput formControlName="provider" placeholder="Provider name"></mat-form-field>
+            <mat-form-field><mat-label>Amount</mat-label><input matInput type="number" min="0.01" step="0.01" formControlName="amount"><span matTextSuffix>EUR</span></mat-form-field>
+            <mat-form-field class="wide"><mat-label>Notes (optional)</mat-label><textarea matInput rows="3" maxlength="1000" formControlName="notes" placeholder="Prescription, exam details, reimbursement reference..."></textarea><mat-hint align="end">{{form.controls.notes.value.length}} / 1000</mat-hint></mat-form-field>
+          </div>
+          <mat-checkbox formControlName="isReimbursable">Eligible for insurance or employer reimbursement</mat-checkbox>
+          <div class="form-actions"><button mat-flat-button type="submit" [disabled]="form.invalid||saving()">{{saving()?'Saving…':editingId()?'Save changes':'Add expense'}}</button>@if(editingId()){<button mat-button type="button" (click)="cancelEdit()">Cancel</button>}</div>
+        </form>
+      </mat-card>
+      <section class="expenses" aria-live="polite">
+        @if(loading()){<mat-card class="empty">Loading medical expenses…</mat-card>}
+        @else if(!expenses().length){<mat-card class="empty"><mat-icon>health_and_safety</mat-icon><h2>No medical expenses yet</h2><p>Add a pharmacy purchase, appointment, exam, or treatment.</p></mat-card>}
+        @for(expense of expenses();track expense.id){
+          <mat-card class="expense-card">
+            <div class="expense-head"><span class="type-icon"><mat-icon>{{typeIcon(expense.expenseType)}}</mat-icon></span><div><h2>{{expense.description}}</h2><p>{{typeLabel(expense.expenseType)}} · {{expense.provider}}</p></div><div class="actions"><button mat-icon-button (click)="edit(expense)" [attr.aria-label]="'Edit '+expense.description"><mat-icon>edit</mat-icon></button><button mat-icon-button (click)="remove(expense)" [attr.aria-label]="'Delete '+expense.description"><mat-icon>delete_outline</mat-icon></button></div></div>
+            <div class="amount"><strong>{{expense.amount|currency:expense.currencyCode}}</strong><span>{{expense.expenseDate|date:'mediumDate'}}</span></div>
+            @if(expense.isReimbursable){<span class="status"><mat-icon>assignment_return</mat-icon>Reimbursable</span>}
+            @if(expense.notes){<p class="notes">{{expense.notes}}</p>}
+          </mat-card>
+        }
+      </section>
+    </div>
+  `,
+  styles: [`
+    header h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:.15rem 0}.eyebrow{letter-spacing:.15em;color:#397454;font-weight:700}.summary{display:grid;grid-template-columns:repeat(2,minmax(220px,320px));gap:1rem;margin:2rem 0}.summary mat-card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.15rem .9rem;padding:1rem 1.2rem}.summary-icon{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#e3f1e6;color:#397454}.summary span{color:#68766f}.summary strong{font-size:1.4rem}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:1.25rem;align-items:start}mat-card{padding:1.3rem}.form-card h2{margin-bottom:1.3rem}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.wide{grid-column:1/-1}.form-actions{display:flex;gap:.5rem;align-items:center;margin-top:1rem}.form-actions button:first-child{flex:1}.expenses{display:grid;gap:1rem}.empty{min-height:220px;display:grid;place-content:center;text-align:center;color:#68766f}.empty>mat-icon{margin:auto;font-size:42px;width:42px;height:42px;color:#397454}.expense-head{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem}.type-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#e3f1e6;color:#285844}.expense-card h2{font-size:1.08rem;margin:0}.expense-card p{color:#68766f;margin:.2rem 0}.actions{display:flex}.amount{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin:1.2rem 0}.amount strong{font-size:1.65rem}.amount span{color:#68766f;font-size:.85rem}.status{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .65rem;border-radius:999px;background:#edf5e9;color:#326146;font-size:.78rem;font-weight:700}.status mat-icon{font-size:17px;width:17px;height:17px}.notes{padding-top:.8rem;border-top:1px solid #e3e9e5;white-space:pre-wrap}@media(max-width:1000px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.summary,.fields{grid-template-columns:1fr}.wide{grid-column:auto}.expense-head{grid-template-columns:auto 1fr}.actions{grid-column:2}.amount{align-items:flex-start;flex-direction:column;gap:.2rem}}
+  `],
+})
+export class MedicalExpensesComponent implements OnInit {
+  private readonly http=inject(HttpClient);
+  readonly expenses=signal<MedicalExpense[]>([]); readonly loading=signal(true); readonly saving=signal(false); readonly editingId=signal<string|null>(null);
+  readonly expenseTypes=[{value:0,label:'Pharmacy',icon:'local_pharmacy'},{value:1,label:'Appointment',icon:'event'},{value:2,label:'Exam',icon:'biotech'},{value:3,label:'Treatment',icon:'healing'},{value:4,label:'Insurance',icon:'health_and_safety'},{value:5,label:'Other',icon:'medical_services'}];
+  readonly form=new FormGroup({description:new FormControl('',{nonNullable:true,validators:[Validators.required]}),provider:new FormControl('',{nonNullable:true,validators:[Validators.required]}),expenseType:new FormControl(0,{nonNullable:true,validators:[Validators.required]}),amount:new FormControl<number|null>(null,[Validators.required,Validators.min(.01)]),currencyCode:new FormControl('EUR',{nonNullable:true}),expenseDate:new FormControl(new Date().toISOString().slice(0,10),{nonNullable:true,validators:[Validators.required]}),notes:new FormControl('',{nonNullable:true,validators:[Validators.maxLength(1000)]}),isReimbursable:new FormControl(false,{nonNullable:true})});
+  ngOnInit(){this.load();}
+  load(){this.http.get<MedicalExpense[]>('/api/medical-expenses').subscribe({next:value=>{this.expenses.set(value);this.loading.set(false);},error:()=>this.loading.set(false)});}
+  typeLabel(type:number){return this.expenseTypes.find(item=>item.value===type)?.label??'Other';} typeIcon(type:number){return this.expenseTypes.find(item=>item.value===type)?.icon??'medical_services';}
+  currentMonthTotal(){const today=new Date();return this.expenses().filter(item=>{const date=new Date(`${item.expenseDate}T00:00:00`);return date.getMonth()===today.getMonth()&&date.getFullYear()===today.getFullYear();}).reduce((sum,item)=>sum+item.amount,0);}
+  reimbursableCount(){return this.expenses().filter(item=>item.isReimbursable).length;}
+  save(){if(this.form.invalid)return;this.saving.set(true);const id=this.editingId();const value=this.form.getRawValue();const payload={...value,notes:value.notes.trim()||null};const request=id?this.http.put<MedicalExpense>(`/api/medical-expenses/${id}`,payload):this.http.post<MedicalExpense>('/api/medical-expenses',payload);request.subscribe({next:expense=>{this.expenses.update(items=>(id?items.map(item=>item.id===id?expense:item):[expense,...items]).sort((a,b)=>b.expenseDate.localeCompare(a.expenseDate)||a.description.localeCompare(b.description)));this.cancelEdit();this.saving.set(false);},error:()=>this.saving.set(false)});}
+  edit(expense:MedicalExpense){this.editingId.set(expense.id);this.form.setValue({description:expense.description,provider:expense.provider,expenseType:expense.expenseType,amount:expense.amount,currencyCode:expense.currencyCode,expenseDate:expense.expenseDate,notes:expense.notes??'',isReimbursable:expense.isReimbursable});window.scrollTo({top:0,behavior:'smooth'});}
+  cancelEdit(){this.editingId.set(null);this.form.reset({expenseType:0,currencyCode:'EUR',expenseDate:new Date().toISOString().slice(0,10),notes:'',isReimbursable:false});}
+  remove(expense:MedicalExpense){if(!confirm(`Delete ${expense.description}?`))return;this.http.delete(`/api/medical-expenses/${expense.id}`).subscribe(()=>this.expenses.update(items=>items.filter(item=>item.id!==expense.id)));}
+}
