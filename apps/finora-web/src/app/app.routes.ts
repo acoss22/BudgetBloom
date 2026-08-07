@@ -16,7 +16,9 @@ export const routes: Routes = [
     { path: 'credit-cards', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 1 } },
     { path: 'debit-cards', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 2 } },
     { path: 'investments', loadComponent: () => import('./features/financial-products/financial-products').then(m => m.FinancialProductsComponent), data: { type: 3 } },
-    ...['accounts','transactions','categories','budgets','recurring-transactions','settings'].map(path => ({ path, loadComponent: () => import('./features/placeholder').then(m => m.PlaceholderComponent), data: { title: path } })),
+    { path: 'categories', loadComponent: () => import('./features/categories/categories').then(m => m.CategoriesComponent) },
+    { path: 'budgets', loadComponent: () => import('./features/budgets/budgets').then(m => m.BudgetsComponent) },
+    ...['accounts','transactions','recurring-transactions','settings'].map(path => ({ path, loadComponent: () => import('./features/placeholder').then(m => m.PlaceholderComponent), data: { title: path } })),
     { path: '', pathMatch: 'full' as const, redirectTo: 'dashboard' }
   ]}, { path: '**', redirectTo: 'dashboard' }
 ];

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Finora.Api.Features;
 
 public sealed record RegisterRequest(string Email, string Password, string DisplayName);
-public sealed record LoginRequest(string Email, string Password);
+public sealed record LoginRequest(string Email, string Password, bool RememberMe = false);
 
 public static class Endpoints
 {
@@ -23,10 +23,12 @@ public static class Endpoints
         api.MapPost("/accounts", (HttpContext c,AccountRequest r,FinanceService s)=>s.CreateAccount(FinanceService.UserId(c.User),r));
         api.MapGet("/categories", (HttpContext c,FinanceService s)=>s.Categories(FinanceService.UserId(c.User)));
         api.MapPost("/categories", (HttpContext c,CategoryRequest r,FinanceService s)=>s.CreateCategory(FinanceService.UserId(c.User),r));
+        api.MapPut("/categories/{id:guid}", (HttpContext c,Guid id,CategoryRequest r,FinanceService s)=>s.UpdateCategory(FinanceService.UserId(c.User),id,r));
         api.MapGet("/transactions", (HttpContext c,FinanceService s,int page=1,int pageSize=25,Guid? accountId=null,Guid? categoryId=null,TransactionType? type=null,DateOnly? startDate=null,DateOnly? endDate=null,string? search=null)=>s.Transactions(FinanceService.UserId(c.User),Math.Max(1,page),Math.Clamp(pageSize,1,100),accountId,categoryId,type,startDate,endDate,search));
         api.MapPost("/transactions", (HttpContext c,TransactionRequest r,FinanceService s)=>s.CreateTransaction(FinanceService.UserId(c.User),r));
         api.MapGet("/budgets", (HttpContext c,FinanceService s)=>s.Budgets(FinanceService.UserId(c.User)));
         api.MapPost("/budgets", (HttpContext c,BudgetRequest r,FinanceService s)=>s.CreateBudget(FinanceService.UserId(c.User),r));
+        api.MapPut("/budgets/{id:guid}", (HttpContext c,Guid id,BudgetRequest r,FinanceService s)=>s.UpdateBudget(FinanceService.UserId(c.User),id,r));
         api.MapGet("/recurring-transactions", (HttpContext c,FinanceService s)=>s.Recurring(FinanceService.UserId(c.User)));
         api.MapPost("/recurring-transactions", (HttpContext c,RecurringRequest r,FinanceService s)=>s.CreateRecurring(FinanceService.UserId(c.User),r));
         api.MapGet("/mortgages", (HttpContext c,FinanceService s)=>s.Mortgages(FinanceService.UserId(c.User)));
@@ -61,12 +63,12 @@ public static class Endpoints
         var user=new ApplicationUser { UserName=request.Email.Trim(), Email=request.Email.Trim(), DisplayName=request.DisplayName.Trim() };
         var result=await users.CreateAsync(user,request.Password);
         if(!result.Succeeded)return Results.ValidationProblem(result.Errors.GroupBy(x=>x.Code).ToDictionary(g=>g.Key,g=>g.Select(x=>x.Description).ToArray()));
-        string[] expense=["Housing","Groceries","Transport","Utilities","Health","Entertainment","Shopping","Subscriptions","Other"];
-        string[] income=["Salary","Freelance","Investments","Gifts","Other"];
-        db.Categories.AddRange(expense.Select(x=>new Category{UserId=user.Id,Name=x,CategoryType=CategoryType.Expense,IsDefault=true}).Concat(income.Select(x=>new Category{UserId=user.Id,Name=x,CategoryType=CategoryType.Income,IsDefault=true})));
+        (string Name,string Icon,string Color)[] expense=[("Housing","home","#5B7DB1"),("Groceries","shopping_cart","#4F8A5B"),("Transport","directions_car","#607D8B"),("Utilities","bolt","#D29B35"),("Health","medical_services","#C45B6A"),("Entertainment","sports_esports","#8A65B5"),("Shopping","shopping_bag","#C06C9B"),("Subscriptions","subscriptions","#4B8F9C"),("Other","category","#7A7A7A")];
+        (string Name,string Icon,string Color)[] income=[("Salary","payments","#397454"),("Freelance","work","#3E7C8F"),("Investments","monitoring","#6A7F3F"),("Gifts","redeem","#A66A8B"),("Other","add_circle","#607D8B")];
+        db.Categories.AddRange(expense.Select(x=>new Category{UserId=user.Id,Name=x.Name,Icon=x.Icon,Color=x.Color,CategoryType=CategoryType.Expense,IsDefault=true}).Concat(income.Select(x=>new Category{UserId=user.Id,Name=x.Name,Icon=x.Icon,Color=x.Color,CategoryType=CategoryType.Income,IsDefault=true})));
         await db.SaveChangesAsync(); await signIn.SignInAsync(user,false); return Results.Ok(UserDto(user));
     }
-    private static async Task<IResult> Login(LoginRequest request,UserManager<ApplicationUser> users,SignInManager<ApplicationUser> signIn) { var user=await users.FindByEmailAsync(request.Email); if(user is null||!(await signIn.PasswordSignInAsync(user,request.Password,true,true)).Succeeded)return Results.Problem(statusCode:401,title:"Invalid email or password."); return Results.Ok(UserDto(user)); }
+    private static async Task<IResult> Login(LoginRequest request,UserManager<ApplicationUser> users,SignInManager<ApplicationUser> signIn) { var user=await users.FindByEmailAsync(request.Email); if(user is null||!(await signIn.PasswordSignInAsync(user,request.Password,request.RememberMe,true)).Succeeded)return Results.Problem(statusCode:401,title:"Invalid email or password."); return Results.Ok(UserDto(user)); }
     private static object UserDto(ApplicationUser u)=>new {u.Id,u.Email,u.DisplayName,u.CreatedAtUtc};
     private static void MapFinancialProducts(RouteGroupBuilder api,string route,FinancialProductType type) { api.MapGet($"/{route}",(HttpContext c,FinanceService s)=>s.FinancialProducts(FinanceService.UserId(c.User),type)); api.MapPost($"/{route}",(HttpContext c,FinancialProductRequest r,FinanceService s)=>s.CreateFinancialProduct(FinanceService.UserId(c.User),type,r)); api.MapPut($"/{route}/{{id:guid}}",(HttpContext c,Guid id,FinancialProductRequest r,FinanceService s)=>s.UpdateFinancialProduct(FinanceService.UserId(c.User),id,type,r)); }
     private static async Task<IResult> Delete(string resource,Guid id,HttpContext c,FinoraDbContext db) { var uid=FinanceService.UserId(c.User); object? entity=resource switch {"accounts"=>await db.Accounts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"categories"=>await db.Categories.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"transactions"=>await db.Transactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"budgets"=>await db.Budgets.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"mortgages"=>await db.Mortgages.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"household-bills"=>await db.HouseholdBills.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"medical-expenses"=>await db.MedicalExpenses.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"supermarket-expenses"=>await db.SupermarketExpenses.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"personal-expenses"=>await db.PersonalExpenses.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"pet-expenses"=>await db.PetExpenses.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),"loans"=>await db.FinancialProducts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid&&x.ProductType==FinancialProductType.Loan),"credit-cards"=>await db.FinancialProducts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid&&x.ProductType==FinancialProductType.CreditCard),"debit-cards"=>await db.FinancialProducts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid&&x.ProductType==FinancialProductType.DebitCard),"investments"=>await db.FinancialProducts.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid&&x.ProductType==FinancialProductType.Investment),"recurring-transactions"=>await db.RecurringTransactions.FirstOrDefaultAsync(x=>x.Id==id&&x.UserId==uid),_=>null}; if(entity is null)return Results.NotFound(); db.Remove(entity); await db.SaveChangesAsync(); return Results.NoContent(); }
